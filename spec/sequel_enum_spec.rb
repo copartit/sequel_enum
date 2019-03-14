@@ -35,9 +35,15 @@ describe "sequel_enum" do
     }.not_to raise_error
   end
 
+  specify "it accepts a hash of index => string" do
+    expect{
+      Item.enum :condition, { :mint => 'MNT' }
+    }.not_to raise_error
+  end
+
   specify "it rejects an invalid hash" do
     expect{
-      Item.enum :condition, { :mint => '0' }
+      Item.enum :condition, { :mint => [0] }
     }.to raise_error(ArgumentError)
   end
 

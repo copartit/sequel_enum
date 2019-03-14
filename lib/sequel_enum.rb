@@ -10,11 +10,11 @@ module Sequel
           @enums ||= {}
         end
 
-        def enum(column, values)
+        def enum(alias_method_name, values)
           if values.is_a? Hash
             values.each do |key,val|
               raise ArgumentError, "index should be a symbol, #{key} provided which it's a #{key.class}" unless key.is_a? Symbol
-              raise ArgumentError, "value should be an integer, #{val} provided which it's a #{val.class}" unless val.is_a? Integer
+              raise ArgumentError, "value should be an integer or string, #{val} provided which is a #{val.class}" unless [Integer, String].include? val.class
             end
           elsif values.is_a? Array
             values = Hash[values.map.with_index { |v, i| [v, i] }]
@@ -22,23 +22,25 @@ module Sequel
             raise ArgumentError, "#enum expects the second argument to be an array of symbols or a hash like { :symbol => integer }"
           end
 
-          define_method "#{column}=" do |value|
-            val = self.class.enums[column].assoc(value.to_sym)
-            self[column] = val && val.last
+          define_method "#{alias_method_name}=" do |value|
+            val = self.class.enums[alias_method_name].assoc(value.to_sym)
+            actual_column = self.class::FIELD_MAPPING[alias_method_name]
+            self[actual_column] = val ? val.last : value
           end
 
-          define_method "#{column}" do
-            val = self.class.enums[column].rassoc(self[column])
-            val && val.first
+          define_method "#{alias_method_name}" do
+            actual_column = self.class::FIELD_MAPPING[alias_method_name]
+            val = self.class.enums[alias_method_name].rassoc(self[actual_column])
+            val ? val.first : self[actual_column]
           end
 
           values.each do |key, value|
             define_method "#{key}?" do
-              self.send(column) == key
+              self.send(alias_method_name) == key
             end
           end
 
-          self.enums[column] = values
+          self.enums[alias_method_name] = values
         end
       end
     end

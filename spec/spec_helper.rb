@@ -12,8 +12,8 @@ RSpec.configure do |config|
     DB.create_table :items do
       primary_key :id
       column :name, String
-      column :condition, Integer
-      column :edition, Integer
+      column :condition, String
+      column :edition, String
     end
   end
 
