@@ -24,8 +24,10 @@ module Sequel
 
           define_method "#{alias_method_name}=" do |value|
             val = self.class.enums[alias_method_name].assoc(value.to_sym)
-            actual_column = self.class::FIELD_MAPPING[alias_method_name]
+            val ||= value if self.class.enums[alias_method_name].keys.include?(value.to_s) # allow passing the code directly
             raise "No enum mapping was found for #{value}, make sure this key is defined in your enum" unless val
+
+            actual_column = self.class::FIELD_MAPPING[alias_method_name]
             self[actual_column] = val&.last
           end
 
