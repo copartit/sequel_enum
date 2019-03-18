@@ -28,7 +28,7 @@ module Sequel
             raise "No enum mapping was found for #{value}, make sure this key is defined in your enum" unless val
 
             actual_column = self.class::FIELD_MAPPING[alias_method_name]
-            self[actual_column] = val&.last
+            self[actual_column] = val.is_a?(Array) ? val.last : val
           end
 
           define_method "#{alias_method_name}" do
